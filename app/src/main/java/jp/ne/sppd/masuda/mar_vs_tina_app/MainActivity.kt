@@ -3,7 +3,6 @@ package jp.ne.sppd.masuda.mar_vs_tina_app
 //import kotlinx.android.synthetic.main.activity_main.*
 
 import android.Manifest
-import android.R
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,20 +10,23 @@ import android.media.MediaActionSound
 import android.media.SoundPool
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
 import android.view.OrientationEventListener
 import android.view.Surface
-import android.view.View
-import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.RecyclerView
+import androidx.core.net.toFile
 import jp.ne.sppd.masuda.mar_vs_tina_app.databinding.ActivityMainBinding
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
@@ -64,10 +66,64 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    private fun getPathFromInputStreamUri(uri: Uri): String? {
+        var filePath: String? = null
+        uri.authority?.let {
+            try {
+                contentResolver.openInputStream(uri).use {
+                    val photoFile: File? = createTemporalFileFrom(it)
+                    filePath = photoFile?.path
+                }
+            } catch (e: FileNotFoundException) {
+                e.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return filePath
+    }
+
+    //@Throws(IOException::class)
+    ///data/user/0/jp.ne.sppd.masuda.mar_vs_tina_app/cache/tmpMarTina2024-08-08-22-09-33-5148321228014448992415.jpg
+    private fun createTemporalFileFrom(inputStream: InputStream?): File? {
+        var targetFile: File? = null
+        return if (inputStream == null) targetFile
+        else {
+            var read: Int
+            val buffer = ByteArray(8 * 1024)
+            targetFile = createTemporalFile()
+            FileOutputStream(targetFile).use { out ->
+                while (inputStream.read(buffer).also { read = it } != -1) {
+                    out.write(buffer, 0, read)
+                }
+                out.flush()
+            }
+            targetFile
+        }
+    }
+
+    private fun createTemporalFile(): File = File.createTempFile("tmpMarTina"+
+            SimpleDateFormat(FILENAME_FORMAT, Locale.US
+            ).format(System.currentTimeMillis()), ".jpg")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //    setContentView(R.layout.activity_main)
+        //shared from other app
+        when {
+            intent?.action == Intent.ACTION_SEND -> {
+                if (intent.type?.startsWith("image/") == true) {
+                    (intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri)?.let {
+                    //(intent.extras!!["android.intent.extra.STREAM"] as Uri).let {
+                        val filepath = getPathFromInputStreamUri(it)
+                        val resultIntent = Intent(thisMainActivity, ResultActivity::class.java)
+                        resultIntent.putExtra("imagePath", filepath)
+                        startActivity(resultIntent)
+                    }
+                }
+            }
+        }
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
