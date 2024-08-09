@@ -84,7 +84,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     //@Throws(IOException::class)
-    ///data/user/0/jp.ne.sppd.masuda.mar_vs_tina_app/cache/tmpMarTina2024-08-08-22-09-33-5148321228014448992415.jpg
     private fun createTemporalFileFrom(inputStream: InputStream?): File? {
         var targetFile: File? = null
         return if (inputStream == null) targetFile
@@ -216,9 +215,7 @@ class MainActivity : AppCompatActivity() {
 //            outputDirectory,
 //            SimpleDateFormat(FILENAME_FORMAT, Locale.US
 //            ).format(System.currentTimeMillis()) + ".jpg")
-        val imageFile = File.createTempFile("tmpMarTina"+
-                SimpleDateFormat(FILENAME_FORMAT, Locale.US
-            ).format(System.currentTimeMillis()), ".jpg")
+        val imageFile = createTemporalFile()
 
         // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions.Builder(imageFile).build()
@@ -243,9 +240,9 @@ class MainActivity : AppCompatActivity() {
                     //シャッター音の追加
                     sound.play(MediaActionSound.SHUTTER_CLICK)
 
-                    val intent = Intent(thisMainActivity, ResultActivity::class.java)
-                    intent.putExtra("imagePath", imageFile.path)
-                    startActivity(intent)
+                    val resultIntent = Intent(thisMainActivity, ResultActivity::class.java)
+                    resultIntent.putExtra("imagePath", imageFile.path)
+                    startActivity(resultIntent)
                 }
 
             })
