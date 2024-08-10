@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
             SimpleDateFormat(FILENAME_FORMAT, Locale.US
             ).format(System.currentTimeMillis()), ".jpg")
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+   override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //    setContentView(R.layout.activity_main)
         //shared from other app
@@ -117,6 +117,7 @@ class MainActivity : AppCompatActivity() {
                         val filepath = getPathFromInputStreamUri(it)
                         val resultIntent = Intent(thisMainActivity, ResultActivity::class.java)
                         resultIntent.putExtra("imagePath", filepath)
+                        resultIntent.putExtra("exit", true)
                         startActivity(resultIntent)
                     }
                 }

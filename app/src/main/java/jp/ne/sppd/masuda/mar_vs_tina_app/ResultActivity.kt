@@ -49,6 +49,12 @@ class ResultActivity : AppCompatActivity(), Runnable {
         val file = File(path!!)
         file.delete()
     }
+    override fun onPause() {
+        super.onPause()
+        if (intent.hasExtra("exit")) {
+            moveTaskToBack(true)
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityResultBinding.inflate(layoutInflater)
